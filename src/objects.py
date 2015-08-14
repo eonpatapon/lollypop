@@ -11,12 +11,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-
 from gi.repository import GLib
-
 from threading import current_thread
 
 from lollypop.define import Lp, Type
+
+_memoized = {}
 
 
 class SqlCursor:
@@ -91,6 +91,26 @@ class Base:
             self.db.set_popularity(self.id, 0, True)
 
 
+def get_id_tuple(f, args, kwargs):
+    l = [id(f)]
+    for arg in args:
+        l.append(arg)
+    for k, v in kwargs:
+        l.append(k)
+    return tuple(l)
+
+
+def memoize(f):
+    def memoized(*args, **kwargs):
+        key = get_id_tuple(f, args, kwargs)
+        if key not in _memoized:
+            print ("cached " + f.__name__ + " " + str(args))
+            _memoized[key] = f(*args, **kwargs)
+        return _memoized[key]
+    return memoized
+
+
+@memoize
 class Album(Base):
     """
         Represent an album
@@ -98,7 +118,7 @@ class Album(Base):
     FIELDS = ['name', 'artist_name', 'artist_id', 'year', 'tracks_id']
     DEFAULTS = ['', '', None, '', []]
 
-    def __init__(self, album_id=None, genre_id=None):
+    def __init__(self, album_id, genre_id=None):
         """
             Init album
             @param album_id as int
@@ -150,6 +170,7 @@ class Album(Base):
         return self._tracks
 
 
+@memoize
 class Track(Base):
     """
         Represent a track
