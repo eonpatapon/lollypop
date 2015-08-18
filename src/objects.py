@@ -123,7 +123,7 @@ class Disc:
 
             @return list of Track
         """
-        return [Track(id) for id in self.tracks_ids]
+        return [Track(id, self.album.preload) for id in self.tracks_ids]
 
 
 class Album(Base):
@@ -133,7 +133,7 @@ class Album(Base):
     FIELDS = ['name', 'artist_name', 'artist_id', 'year', 'path']
     DEFAULTS = ['', '', None, '', '']
 
-    def __init__(self, album_id=None, genre_id=None):
+    def __init__(self, album_id=None, genre_id=None, preload=False):
         """
             Init album
             @param album_id as int
@@ -142,6 +142,7 @@ class Album(Base):
         Base.__init__(self, Lp.albums)
         self.id = album_id
         self.genre_id = genre_id
+        self.preload = preload
 
     def set_genre(self, genre_id):
         """
@@ -183,7 +184,7 @@ class Album(Base):
             @return list of Track
         """
         if not self._tracks and self.tracks_ids:
-            self._tracks = [Track(track_id) for track_id in self.tracks_ids]
+            self._tracks = [Track(track_id, preload=self.preload) for track_id in self.tracks_ids]
         return self._tracks
 
     @property
@@ -207,7 +208,7 @@ class Track(Base):
               'genre_names', 'duration', 'number', 'path']
     DEFAULTS = ['', None, None, [], '', '', '', 0.0, None, '']
 
-    def __init__(self, track_id=None):
+    def __init__(self, track_id=None, preload=False):
         """
             Init track
             @param track_id as int
@@ -215,6 +216,14 @@ class Track(Base):
         Base.__init__(self, Lp.tracks)
         self.id = track_id
         self._uri = None
+
+        if preload is True:
+            print ("Preload track " + str(self.id))
+            with SqlCursor() as sql:
+                self._name,
+                self._path,
+                self._duration,
+                self._album_id = self.db.get_infos(self.id, sql)
 
     @property
     def title(self):

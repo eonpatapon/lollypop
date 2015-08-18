@@ -29,12 +29,12 @@ class AlbumWidget(Gtk.Bin):
         Base album widget
     """
 
-    def __init__(self, album_id, genre_id=None):
+    def __init__(self, album_id, genre_id=None, preload=False):
         """
             Init widget
         """
         Gtk.Bin.__init__(self)
-        self._album = Album(album_id, genre_id)
+        self._album = Album(album_id, genre_id, preload=preload)
         self._selected = None
         self._stop = False
         self._cover = None
@@ -227,7 +227,7 @@ class AlbumDetailedWidget(AlbumWidget):
             @param scrolled as bool
             @param size group as Gtk.SizeGroup
         """
-        AlbumWidget.__init__(self, album_id, genre_id=genre_id)
+        AlbumWidget.__init__(self, album_id, genre_id=genre_id, preload=True)
 
         builder = Gtk.Builder()
         if scrolled:
